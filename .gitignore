@@ -1,5 +1,6 @@
 */.env
 .env
+mysqld_exporter.cnf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

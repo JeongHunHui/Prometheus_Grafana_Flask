@@ -8,6 +8,7 @@ services:
       - "5000:5000"
     env_file:
       - ./backend/.env
+
   prometheus:
     container_name: playground-prometheus
     image: prom/prometheus:v2.30.0
@@ -19,6 +20,7 @@ services:
       - "--storage.tsdb.path=/prometheus"
     ports:
       - 9090:9090
+
   grafana:
     container_name: playground-grafana
     image: grafana/grafana
@@ -26,6 +28,48 @@ services:
       - grafana_data:/var/lib/grafana
     ports:
       - 3000:3000
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: playground-node-exporter
+    restart: always
+    ports:
+      - 9100:9100
+    networks:
+      - default
+
+  cAdvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.46.0
+    container_name: playground-cAdvisor
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    devices:
+      - "/dev/kmsg:/dev/kmsg"
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - default
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter
+    container_name: playground-mysqld-exporter
+    command:
+      - "--config.my-cnf=/etc/.my.cnf"
+      - "--collect.global_status"
+      - "--collect.info_schema.query_response_time"
+      - "--collect.info_schema.innodb_cmp"
+      - "--collect.info_schema.processlist"
+    volumes:
+      - ./mysqld_exporter.cnf:/etc/.my.cnf
+    ports:
+      - 9104:9104
 
 volumes:
   prometheus_data:
