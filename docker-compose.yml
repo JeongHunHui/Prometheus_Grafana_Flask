@@ -2,9 +2,31 @@ version: "3.8"
 
 services:
   backend:
-    container_name: playground_backend
+    container_name: playground-backend
     build: ./backend
     ports:
       - "5000:5000"
     env_file:
       - ./backend/.env
+  prometheus:
+    container_name: playground-prometheus
+    image: prom/prometheus:v2.30.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - 9090:9090
+  grafana:
+    container_name: playground-grafana
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - 3000:3000
+
+volumes:
+  prometheus_data:
+  grafana_data:
